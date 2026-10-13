@@ -1,0 +1,35 @@
+{
+  "name": "claude-dynamic-workflow",
+  "version": "0.1.0",
+  "description": "Teams of role agents that debate, decide and deliver inside Claude Code: dynamic workflows over an MCP message bus.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dungtv0805/cdw.git"
+  },
+  "homepage": "https://github.com/dungtv0805/cdw#readme",
+  "bugs": {
+    "url": "https://github.com/dungtv0805/cdw/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "dw": "bin/dw",
+    "dw-bus": "bin/dw-bus"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "templates",
+    "README.md",
+    "INSTALL.md"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "minimatch": "10.2.6",
+    "nanoid": "5.1.16",
+    "pino": "9.5.0",
+    "zod": "4.6.5"
+  }
+}

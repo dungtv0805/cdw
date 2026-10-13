@@ -1,0 +1,2 @@
+import{a as o,c as e}from"../chunk-GKRS2YGM.js";import{g as r}from"../chunk-YACCOTIF.js";import"../chunk-5IZMKQZ3.js";import"../chunk-4CHJJ26G.js";import{join as t}from"node:path";import{StdioServerTransport as n}from"@modelcontextprotocol/sdk/server/stdio.js";var s=process.env.DW_HOME??t(process.cwd(),".dw"),c=e(new r({home:s}));await c.connect(new n);process.stderr.write(`workflow-bus ${o} connected, DW_HOME=${s}
+`);

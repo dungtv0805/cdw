@@ -1,0 +1,17 @@
+#!/bin/sh
+# workflow-bus MCP server (stdio). In a source checkout it runs the TypeScript
+# sources through tsx, so the server always matches the code; otherwise it runs
+# the built bundle.
+SELF="$0"
+while [ -L "$SELF" ]; do
+  LINK="$(readlink "$SELF")"
+  case "$LINK" in
+    /*) SELF="$LINK" ;;
+    *) SELF="$(dirname "$SELF")/$LINK" ;;
+  esac
+done
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+if [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -f "$ROOT/src/bus/main.ts" ]; then
+  exec "$ROOT/node_modules/.bin/tsx" "$ROOT/src/bus/main.ts" "$@"
+fi
+exec node "$ROOT/dist/bus/main.js" "$@"

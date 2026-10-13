@@ -1,0 +1,73 @@
+{
+  "id": "incident-investigation",
+  "name": "Incident investigation",
+  "description": "Two investigators gather evidence from different angles, debate root-cause hypotheses with the SRE lead and produce an incident report.",
+  "whenToUse": "Something broke or behaves wrongly and the root cause is unknown: an outage, a regression, a production bug.",
+  "requestTypes": ["incident", "outage", "regression", "bug-investigation", "postmortem"],
+  "team": [
+    {
+      "id": "LogAnalyst",
+      "agent": "investigator",
+      "name": "Log Analyst",
+      "perspective": "Logs, traces, error messages and the code paths they point to."
+    },
+    {
+      "id": "ChangeAnalyst",
+      "agent": "investigator",
+      "name": "Change Analyst",
+      "perspective": "Recent changes: commits, deploys, configuration and dependency updates, and the metrics around them."
+    },
+    { "id": "SRELead", "agent": "sre-lead" }
+  ],
+  "texts": {
+    "evidence-rule": "An observation counts as evidence only with its source (file, log line, commit, metric) and its time."
+  },
+  "context": {
+    "L0": ["brief", "team"],
+    "L1": ["text:evidence-rule", "decisions"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "evidence",
+      "title": "Evidence",
+      "goal": "Gather evidence from your angle and propose initial hypotheses.",
+      "instructions": ["Use read-only commands (git log, grep, reading logs and code). Change nothing."]
+    },
+    {
+      "kind": "debate",
+      "id": "hypotheses",
+      "title": "Hypotheses",
+      "goal": "Rank root-cause hypotheses by evidence; confirm or refute each with the cheapest discriminating check.",
+      "maxRounds": 3,
+      "context": { "L1": ["phase:evidence"] }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Ask the user for the access or approvals the investigation or the mitigation needs."
+    },
+    {
+      "kind": "synthesize",
+      "id": "report",
+      "title": "Report",
+      "goal": "Write the incident report and have both analysts confirm the evidence.",
+      "owner": "SRELead",
+      "reviewers": ["LogAnalyst", "ChangeAnalyst"],
+      "artifact": {
+        "name": "incident-report.md",
+        "sections": ["Summary", "Impact", "Timeline", "Evidence", "Root-cause hypotheses (ranked)", "Mitigation", "Follow-ups"]
+      },
+      "context": { "L1": ["phase:hypotheses"] }
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "Access to production systems or customer data is needed",
+      "A mitigation has user-visible impact",
+      "Customer communication is needed"
+    ]
+  },
+  "bus": { "topics": ["decisions", "evidence"] }
+}

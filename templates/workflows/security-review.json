@@ -1,0 +1,71 @@
+{
+  "id": "security-review",
+  "name": "Security review",
+  "description": "Red Team, Blue Team and Compliance threat-model the system, debate controls and produce a ranked security report.",
+  "whenToUse": "A feature, service or change needs a threat model and a review of its controls and obligations.",
+  "requestTypes": ["security", "threat-model", "audit", "privacy"],
+  "team": [
+    { "id": "RedTeam", "agent": "red-team" },
+    { "id": "BlueTeam", "agent": "blue-team" },
+    { "id": "Compliance", "agent": "compliance" }
+  ],
+  "texts": {
+    "severity-scale": "High: plausible attack path and serious impact (data exposure, account takeover, outage). Medium: needs an unusual precondition or has limited impact. Low: theoretical or minor."
+  },
+  "context": {
+    "L0": ["brief", "team"],
+    "L1": ["text:severity-scale", "decisions"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "threat-model",
+      "title": "Threat model",
+      "goal": "Map assets, trust boundaries and threats (Red Team), existing controls (Blue Team) and obligations (Compliance).",
+      "instructions": ["Read the code and configuration in scope before listing threats or controls."]
+    },
+    {
+      "kind": "debate",
+      "id": "controls",
+      "title": "Controls",
+      "goal": "Agree on the severity of each threat and on a proportionate control or an explicit risk to accept.",
+      "maxRounds": 2,
+      "context": { "L1": ["phase:threat-model"] }
+    },
+    {
+      "kind": "escalate",
+      "id": "risk-acceptance",
+      "title": "Risk acceptance",
+      "goal": "Ask the user to accept residual risks or approve controls that need budget."
+    },
+    {
+      "kind": "synthesize",
+      "id": "report",
+      "title": "Report",
+      "goal": "Write the security report and have the Red Team and Compliance confirm it.",
+      "owner": "BlueTeam",
+      "reviewers": ["RedTeam", "Compliance"],
+      "artifact": {
+        "name": "security-review.md",
+        "sections": [
+          "Scope",
+          "Assets and trust boundaries",
+          "Threats ranked by severity",
+          "Controls and gaps",
+          "Compliance obligations",
+          "Accepted risks",
+          "Action items"
+        ]
+      },
+      "context": { "L1": ["phase:controls"] }
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "A residual risk must be accepted",
+      "A control needs budget, a vendor or a policy change",
+      "Whether a regulation applies depends on business facts"
+    ]
+  },
+  "bus": { "topics": ["decisions", "threats"] }
+}

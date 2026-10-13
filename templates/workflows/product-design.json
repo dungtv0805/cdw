@@ -1,0 +1,73 @@
+{
+  "id": "product-design",
+  "name": "Product design debate",
+  "description": "PM, Engineer and Architect debate a feature over the bus and produce a reviewed spec; only blocking business questions reach the user.",
+  "whenToUse": "A new feature or product change needs a spec: scope, requirements, design and decisions.",
+  "requestTypes": ["feature", "product", "spec", "requirements"],
+  "team": [
+    { "id": "PM", "agent": "pm" },
+    { "id": "Engineer", "agent": "engineer" },
+    { "id": "Architect", "agent": "architect" }
+  ],
+  "texts": {
+    "definition-of-done": "The spec is done when: the user problem and success criteria are explicit; goals and non-goals are listed; every requirement is testable; each key decision has its rationale and the rejected alternative; risks have mitigations; open questions have an owner."
+  },
+  "context": {
+    "L0": ["brief", "team"],
+    "L1": ["text:definition-of-done", "decisions"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "explore",
+      "title": "Explore",
+      "goal": "Each role analyses the brief from its perspective and states a position: proposals, concerns and questions.",
+      "instructions": ["Read the codebase areas the brief touches before forming your position."]
+    },
+    {
+      "kind": "debate",
+      "id": "debate",
+      "title": "Debate",
+      "goal": "Challenge and refine the positions until the team agrees on scope, approach and architecture.",
+      "maxRounds": 3,
+      "context": { "L1": ["phase:explore"] }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Ask the user only the questions that block the team and that only the user can answer."
+    },
+    {
+      "kind": "synthesize",
+      "id": "spec",
+      "title": "Spec",
+      "goal": "Write the agreed spec and get it approved by the other roles.",
+      "owner": "Architect",
+      "reviewers": ["PM", "Engineer"],
+      "artifact": {
+        "name": "spec.md",
+        "sections": [
+          "Problem and users",
+          "Goals and success criteria",
+          "Non-goals",
+          "Requirements (testable)",
+          "Design overview",
+          "Key decisions and rationale",
+          "Risks and mitigations",
+          "Open questions"
+        ]
+      },
+      "context": { "L1": ["phase:debate"] }
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "A scope or priority trade-off that changes what users get",
+      "A cost, licensing or infrastructure commitment",
+      "A deadline versus quality trade-off",
+      "Business context the team cannot see"
+    ]
+  },
+  "bus": { "topics": ["decisions"] }
+}

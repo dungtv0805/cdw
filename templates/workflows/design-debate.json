@@ -1,0 +1,58 @@
+{
+  "id": "design-debate",
+  "name": "Design decision debate",
+  "description": "Advocate and Skeptic argue a design proposal; the Synthesizer drives it to an explicit decision record (ADR).",
+  "whenToUse": "A design, architecture or technology choice must be evaluated and decided, with its trade-offs recorded.",
+  "requestTypes": ["design-review", "adr", "architecture-decision", "trade-off"],
+  "team": [
+    { "id": "Advocate", "agent": "advocate" },
+    { "id": "Skeptic", "agent": "skeptic" },
+    { "id": "Synthesizer", "agent": "synthesizer" }
+  ],
+  "context": {
+    "L0": ["brief", "team"],
+    "L1": ["decisions"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "positions",
+      "title": "Positions",
+      "goal": "The Advocate states the case for, the Skeptic the case against, the Synthesizer the decision criteria."
+    },
+    {
+      "kind": "debate",
+      "id": "debate",
+      "title": "Debate",
+      "goal": "Test every argument against the criteria until the decision is clear or the disagreement is stated precisely.",
+      "maxRounds": 3,
+      "context": { "L1": ["phase:positions"] }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Bring the user only the trade-offs that depend on business priorities."
+    },
+    {
+      "kind": "synthesize",
+      "id": "record",
+      "title": "Decision record",
+      "goal": "Write the decision record and have both debaters confirm it represents their arguments fairly.",
+      "owner": "Synthesizer",
+      "reviewers": ["Advocate", "Skeptic"],
+      "artifact": {
+        "name": "adr.md",
+        "sections": ["Context", "Decision drivers", "Options considered", "Decision", "Consequences", "Dissent and open questions"]
+      },
+      "context": { "L1": ["phase:debate"] }
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "The options are tied on technical merit and differ on business priorities",
+      "Accepting a risk is a business decision"
+    ]
+  },
+  "bus": { "topics": ["decisions"] }
+}

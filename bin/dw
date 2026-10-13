@@ -1,0 +1,16 @@
+#!/bin/sh
+# dw — dynamic-workflow CLI. In a source checkout it runs the TypeScript
+# sources through tsx; otherwise it runs the built bundle.
+SELF="$0"
+while [ -L "$SELF" ]; do
+  LINK="$(readlink "$SELF")"
+  case "$LINK" in
+    /*) SELF="$LINK" ;;
+    *) SELF="$(dirname "$SELF")/$LINK" ;;
+  esac
+done
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+if [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -f "$ROOT/src/dw/main.ts" ]; then
+  exec "$ROOT/node_modules/.bin/tsx" "$ROOT/src/dw/main.ts" "$@"
+fi
+exec node "$ROOT/dist/dw/main.js" "$@"
