@@ -263,24 +263,6 @@ Yes. Roles and request types are JSON templates: skills per phase, rules, contex
 **Will it change my code?**
 Only `feature-delivery` does. It commits each work item on your current branch, and never pushes, merges or rewrites history. Every other template only reads.
 
-## Tiếng Việt
-
-cdw là plugin Claude Code giúp **nhiều AI agent trao đổi với nhau** để cùng làm một việc. Một team agent theo vai trò (PM, Architect, Engineer, Reviewer, red team, SRE…) nói chuyện trực tiếp với nhau qua message bus (MCP server), tranh luận tới khi thống nhất, và chỉ hỏi bạn những câu thật sự cần bạn quyết. Một lệnh đi từ yêu cầu tới spec, plan, rồi code đã được review và commit.
-
-Có sẵn các workflow:
-- `feature-delivery`: làm tính năng từ đầu tới cuối;
-- `product-design`: viết spec;
-- `design-debate`: tranh luận thiết kế và ghi lại thành ADR;
-- `security-review`: review bảo mật;
-- `incident-investigation`: điều tra sự cố.
-
-Bạn cũng có thể tự định nghĩa agent và workflow bằng JSON.
-
-```text
-/plugin marketplace add dungtv0805/cdw
-/plugin install cdw@cdw
-/cdw:dw feature-delivery <mô tả tính năng>
-```
 
 ## License
 
