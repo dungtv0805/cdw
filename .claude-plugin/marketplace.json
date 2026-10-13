@@ -1,0 +1,16 @@
+{
+  "name": "cdw",
+  "owner": {
+    "name": "dungtv0805"
+  },
+  "metadata": {
+    "description": "Claude Code plugin for multi-agent collaboration: AI agents (PM, Architect, Engineer, Reviewer) talk to each other over an MCP message bus, debate to consensus, ask you only blocking questions, and deliver specs, plans and reviewed code."
+  },
+  "plugins": [
+    {
+      "name": "cdw",
+      "source": "./",
+      "description": "Claude Code plugin for multi-agent collaboration: AI agents (PM, Architect, Engineer, Reviewer) talk to each other over an MCP message bus, debate to consensus, ask you only blocking questions, and deliver specs, plans and reviewed code."
+    }
+  ]
+}

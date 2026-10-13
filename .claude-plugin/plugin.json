@@ -1,0 +1,34 @@
+{
+  "name": "cdw",
+  "displayName": "cdw: multi-agent teams for Claude Code",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for multi-agent collaboration: AI agents (PM, Architect, Engineer, Reviewer) talk to each other over an MCP message bus, debate to consensus, ask you only blocking questions, and deliver specs, plans and reviewed code.",
+  "author": {
+    "name": "dungtv0805"
+  },
+  "homepage": "https://github.com/dungtv0805/cdw#readme",
+  "repository": "https://github.com/dungtv0805/cdw",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "claude-code-skill",
+    "claude-skills",
+    "multi-agent",
+    "multi-agent-system",
+    "ai-agents",
+    "agent-team",
+    "agent-collaboration",
+    "agent-communication",
+    "agent-to-agent",
+    "subagents",
+    "agent-orchestration",
+    "dynamic-workflow",
+    "mcp",
+    "mcp-server",
+    "code-review",
+    "spec-driven-development",
+    "tdd",
+    "llm"
+  ]
+}

@@ -5,9 +5,42 @@
 - macOS or Linux (on Windows, use WSL)
 - Node.js 20 or newer, with npm
 - Claude Code, with **Dynamic workflows** enabled in `/config` (without it Claude Code has no `Workflow` tool)
-- `curl` and `tar` for the one-line installer
+- `curl` and `tar` for the install script (not needed for the plugin)
 
-## One-line install (recommended)
+## As a Claude Code plugin (recommended)
+
+The repository is a Claude Code plugin and its own marketplace.
+
+```text
+/plugin marketplace add dungtv0805/cdw
+/plugin install cdw@cdw
+```
+
+From the shell, choose the scope:
+
+```bash
+# every project on this machine (user scope, the default)
+claude plugin install cdw --marketplace dungtv0805/cdw --scope user
+
+# this repository, for the whole team: both entries land in .claude/settings.json; commit it
+claude plugin marketplace add dungtv0805/cdw --scope project
+claude plugin install cdw@cdw --scope project
+
+# this repository, only for you
+claude plugin install cdw --marketplace dungtv0805/cdw --scope local
+```
+
+What the plugin brings:
+- the `/cdw:dw` and `/cdw:dw-inbox` commands;
+- one saved workflow per template, for example `/cdw:dw-feature-delivery`;
+- the `workflow-bus` MCP server, shown as `plugin:cdw:workflow-bus` in `/mcp`.
+
+Every path goes through `${CLAUDE_PLUGIN_ROOT}`, and each project keeps its runs in its own `.dw/`. The programs are bundled, so nothing is installed with npm. Run `/reload-plugins` or restart Claude Code after installing.
+
+- **Update:** `/plugin marketplace update cdw`, then reinstall or update the plugin from `/plugin`.
+- **Remove:** `claude plugin uninstall cdw@cdw`.
+
+## One-line install script
 
 ```bash
 # every project on this machine (user scope, the default)
@@ -20,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/dungtv0805/cdw/main/install.sh | ba
 curl -fsSL https://raw.githubusercontent.com/dungtv0805/cdw/main/install.sh | bash -s -- --scope none
 ```
 
-Every scope installs the package into `~/.cdw/app` (runtime dependencies only) and links `dw` and `dw-bus` into `~/.local/bin`. What happens next depends on the scope:
+Every scope installs the package into `~/.cdw/app` (the programs are bundled: no npm install) and links `dw` and `dw-bus` into `~/.local/bin`. What happens next depends on the scope:
 
 - **`user`:**
   - `dw setup` writes `/dw` and `/dw-inbox` into `~/.claude/commands/` (or `$CLAUDE_CONFIG_DIR/commands/`).
@@ -94,7 +127,7 @@ cd your-project && dw doctor       # dw doctor --json for scripts and CI
 | Problem | Fix |
 |---------|-----|
 | `dw: command not found` | add `~/.local/bin` to `PATH`: `export PATH="$HOME/.local/bin:$PATH"` (fish: `fish_add_path ~/.local/bin`) |
-| `/dw` is not offered in Claude Code | restart Claude Code; check `~/.claude/commands/dw.md` (user scope) or `.claude/commands/dw.md` (project scope) |
+| `/cdw:dw` or `/dw` is not offered | `/reload-plugins` or restart Claude Code; plugin: `claude plugin list`; script: check `~/.claude/commands/dw.md` (user scope) or `.claude/commands/dw.md` (project scope) |
 | no `Workflow` tool | enable **Dynamic workflows** in `/config` |
 | `workflow-bus` tools missing | `claude mcp list` should list it; reconnect it with `/mcp`; re-register with the command `dw setup` prints |
 | `dw doctor` reports a problem | follow the `Fix:` line under the failed check |

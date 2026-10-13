@@ -1,7 +1,32 @@
 {
   "name": "claude-dynamic-workflow",
   "version": "0.1.0",
-  "description": "Teams of role agents that debate, decide and deliver inside Claude Code: dynamic workflows over an MCP message bus.",
+  "displayName": "cdw: multi-agent teams for Claude Code",
+  "description": "Claude Code plugin for multi-agent collaboration: AI agents (PM, Architect, Engineer, Reviewer) talk to each other over an MCP message bus, debate to consensus, ask you only blocking questions, and deliver specs, plans and reviewed code.",
+  "license": "MIT",
+  "author": "dungtv0805",
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "claude-code-skill",
+    "claude-skills",
+    "multi-agent",
+    "multi-agent-system",
+    "ai-agents",
+    "agent-team",
+    "agent-collaboration",
+    "agent-communication",
+    "agent-to-agent",
+    "subagents",
+    "agent-orchestration",
+    "dynamic-workflow",
+    "mcp",
+    "mcp-server",
+    "code-review",
+    "spec-driven-development",
+    "tdd",
+    "llm"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dungtv0805/cdw.git"
@@ -23,13 +48,7 @@
     "dist",
     "templates",
     "README.md",
-    "INSTALL.md"
-  ],
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "1.32.1",
-    "minimatch": "10.2.6",
-    "nanoid": "5.1.16",
-    "pino": "9.5.0",
-    "zod": "4.6.5"
-  }
+    "INSTALL.md",
+    "LICENSE"
+  ]
 }

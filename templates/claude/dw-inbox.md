@@ -1,5 +1,5 @@
 ---
-description: Show what the dynamic-workflow teams are waiting on and answer their questions
+description: Show what your multi-agent teams are waiting on and answer their blocking questions
 allowed-tools: Bash({{DW_BIN}}:*), {{BUS}}bus_poll, {{BUS}}bus_reply, {{BUS}}bus_run
 ---
 

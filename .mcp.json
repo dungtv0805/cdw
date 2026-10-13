@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "workflow-bus": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/bus/main.js"
+      ],
+      "env": {
+        "DW_HOME": "${CLAUDE_PROJECT_DIR}/.dw"
+      },
+      "alwaysLoad": true,
+      "timeout": 1900000
+    }
+  }
+}

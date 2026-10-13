@@ -1,5 +1,5 @@
 ---
-description: Run a team of role agents as a background dynamic workflow; they debate over workflow-bus and bring you only the questions that block them
+description: Run a multi-agent team in the background. Role agents (PM, Architect, Engineer, Reviewer, …) talk to each other over a message bus, debate and bring you only the questions that block them. Use it to write a spec, debate a design, deliver a feature end to end with code review, run a security review or investigate an incident.
 argument-hint: <template> <brief>   (feature-delivery | product-design | design-debate | security-review | incident-investigation)
 allowed-tools: Bash({{DW_BIN}}:*), {{BUS}}bus_poll, {{BUS}}bus_reply, {{BUS}}bus_send, {{BUS}}bus_run, {{BUS}}bus_history, {{BUS}}bus_artifact
 ---

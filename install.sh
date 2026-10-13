@@ -5,7 +5,8 @@
 #   curl -fsSL https://raw.githubusercontent.com/dungtv0805/cdw/main/install.sh | bash -s -- --scope project
 #   curl -fsSL https://raw.githubusercontent.com/dungtv0805/cdw/main/install.sh | bash -s -- --uninstall
 #
-# Installs the package into ~/.cdw/app and links dw and dw-bus into ~/.local/bin, then:
+# Installs the package into ~/.cdw/app (no npm install: the programs are bundled) and
+# links dw and dw-bus into ~/.local/bin, then:
 #   --scope user     (default) /dw and /dw-inbox in ~/.claude/commands and the workflow-bus
 #                    MCP server registered for every project (claude mcp add-json --scope user)
 #   --scope project  only the current directory: dw init writes .mcp.json, .claude/commands,
@@ -83,7 +84,6 @@ case "$CDW_SCOPE" in
 esac
 
 need node "install Node.js ${MIN_NODE_MAJOR} or newer (https://nodejs.org)"
-need npm "it comes with Node.js"
 need tar "install tar"
 node_major="$(node -p 'process.versions.node.split(".")[0]')"
 [ "$node_major" -ge "$MIN_NODE_MAJOR" ] || die "Node.js ${MIN_NODE_MAJOR}+ is required (found $(node --version))"
@@ -110,8 +110,8 @@ pkg="$(dirname "$manifest")"
 [ -f "$pkg/dist/dw/main.js" ] && [ -f "$pkg/dist/bus/main.js" ] || die "the archive does not contain a built cdw package"
 version="$(cd "$pkg" && node -p 'require("./package.json").version')"
 
+# The programs are bundled: nothing to install beyond the files themselves.
 say "Installing cdw $version into $APP"
-(cd "$pkg" && npm install --omit=dev --ignore-scripts --no-audit --no-fund --no-update-notifier --loglevel=error >/dev/null) || die "npm install failed"
 mkdir -p "$CDW_HOME"
 rm -rf "$APP.new" "$APP.old"
 mv "$pkg" "$APP.new"
