@@ -1,0 +1,82 @@
+{
+  "id": "context-update",
+  "name": "Update project context",
+  "description": "Update existing context files based on new decisions, changes, or learnings from workflow runs.",
+  "whenToUse": "After completing a design debate, feature delivery, or when project facts have changed.",
+  "requestTypes": ["context-update", "update-context", "sync-knowledge", "record-decision"],
+  "team": [
+    { "id": "Proposer", "agent": "pm", "perspective": "Propose context updates based on recent decisions or changes." },
+    { "id": "Verifier", "agent": "reviewer", "perspective": "Verify proposed updates don't contradict existing facts, check for staleness." },
+    { "id": "Writer", "agent": "synthesizer", "perspective": "Apply verified updates to context files, maintain coherence." }
+  ],
+  "texts": {
+    "update-rules": "## Context Update Rules\n\n**Allowed updates:**\n- Add new verified facts to `facts/`\n- Add new decisions to `decisions/` with full rationale\n- Move resolved issues from `open_issues/` to `decisions/`\n- Update `perspectives/` based on new learnings\n- Supersede old decisions with new ones (use `supersedes` field)\n\n**Forbidden:**\n- Deleting facts without explicit user approval\n- Changing decisions without recording the superseding decision\n- Writing unverified content to `facts/` (use `working/` first)\n\n**Staleness detection:**\n- Check `invalidatedBy` conditions on existing decisions\n- Flag decisions that may be stale based on new information\n- Mark stale decisions with `status: stale` in their header\n\n**Keep the knowledge true and small (every create and update):**\n- Verify each claim against the repository and cite where it lives: the file and the symbol (function, type, constant), never a line number (lines move).\n- Check every citation before you propose, approve or write it: `ls <path>` for each path, `grep -n <symbol> <file>` for each symbol, and quote what you ran; then read enough of the cited code to confirm what you say it does — existence is not meaning. A citation nobody checked is not verified (past runs approved two paths that do not exist and a test described as checking something it does not).\n- Never copy volatile numbers (counts of tests, files, lines or entries; sizes): point to the source that holds them.\n- Prefer a pointer to a source (file, ADR, decision) over a copy of it. One file per topic: update it, never create a second one.\n- Write module paths from the repository root (`src/...`), so a reader can open them.\n- A fact states what is true now. Work that is not built yet belongs in a decision (with its status) or in `open_issues/`.\n- An update replaces stale text instead of appending history (git keeps the history); the knowledge base grows only when something new is recorded.\n- Set `updated:` to today's date in the header of every file you create or change.",
+    "changelist-format": "## Change-list format (context-changes.json)\n\nThe artifact MUST be a single JSON object applied by `dw apply <runId>`:\n\n```json\n{\n  \"version\": 1,\n  \"changes\": [\n    { \"op\": \"delete\", \"path\": \"open_issues/resolved-issue.md\" },\n    { \"op\": \"create\", \"path\": \"decisions/my-decision.md\", \"content\": \"---\\ntype: decision\\nstatus: active\\ndate: YYYY-MM-DD\\nupdated: YYYY-MM-DD\\nsource: commit:<sha>\\nconfidence: verified\\nscope: shared\\n---\\n\\n# Decision Title\\n...\" },\n    { \"op\": \"update\", \"path\": \"facts/pattern-x.md\", \"content\": \"---\\ntype: fact\\n...full file content...\" }\n  ]\n}\n```\n\n**Rules:**\n- `op`: create | update | delete\n- `path`: relative to .claude/context/, starts with facts/ perspectives/ decisions/ open_issues/ working/, ends in .md\n- `content`: REQUIRED for create/update (full file incl. YAML header), FORBIDDEN for delete\n- The YAML header `type:` must match the folder: facts→fact, decisions→decision, open_issues→open_issue, perspectives→perspective, working→working\n- `dw apply` validates paths + headers, writes atomically, and verifies with SHA-256. Any violation aborts the whole apply."
+  },
+  "context": {
+    "L0": ["brief", "team", "text:update-rules"],
+    "L1": ["workspace:facts/architecture", "workspace:facts/conventions"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "identify-updates",
+      "title": "Identify needed updates",
+      "goal": "Proposer analyzes the brief and recent changes to identify what context needs updating.",
+      "participants": ["Proposer"],
+      "instructions": [
+        "Read the current context files in .claude/context/",
+        "Compare with the brief's new information",
+        "List proposed additions, modifications, or supersessions",
+        "For each update, state the source (which decision/change triggers it)",
+        "Identify any facts that may now be stale"
+      ]
+    },
+    {
+      "kind": "debate",
+      "id": "verify-updates",
+      "title": "Verify proposed updates",
+      "goal": "Debate whether proposed updates are valid, don't contradict existing facts, and are properly sourced.",
+      "participants": ["Proposer", "Verifier"],
+      "maxRounds": 2,
+      "context": { "L1": ["phase:identify-updates"] },
+      "instructions": [
+        "Verifier challenges each proposed update",
+        "Check for contradictions with existing facts",
+        "Verify sources are cited",
+        "Reject any update that breaks a rule of text:update-rules (an unverified claim, a line number, a copied count, a path not written from the repository root, a second file on a topic)",
+        "Agree on final list of updates to apply"
+      ]
+    },
+    {
+      "kind": "synthesize",
+      "id": "build-changelist",
+      "title": "Build the change-list",
+      "goal": "Writer produces a deterministic change-list artifact that 'dw apply' writes to .claude/context/. Do NOT write files directly — emit the change-list only.",
+      "owner": "Writer",
+      "reviewers": ["Proposer", "Verifier"],
+      "artifact": {
+        "name": "context-changes.json",
+        "sections": ["version", "changes"]
+      },
+      "context": { "L1": ["phase:verify-updates", "text:changelist-format"] },
+      "instructions": [
+        "Emit the artifact as a SINGLE JSON object matching text:changelist-format exactly — no markdown, no prose outside the JSON",
+        "Each verified update becomes one entry in changes[] with op create|update|delete",
+        "create/update entries carry full file content including the YAML header (type, source, confidence, scope, updated)",
+        "delete entries carry only op and path (for resolved open_issues)",
+        "paths are relative to .claude/context/ and start with facts/, perspectives/, decisions/, open_issues/, or working/",
+        "Do NOT write any file yourself — the change-list is the only deliverable; 'dw apply <runId>' performs the writes with verification",
+        "Reviewers: approve only when every entry keeps the rules of text:update-rules; each broken rule is a major issue"
+      ]
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "Proposed update contradicts a verified fact",
+      "Decision supersession affects downstream dependencies",
+      "User input needed to resolve conflicting information"
+    ]
+  },
+  "bus": { "topics": ["updates", "conflicts"] }
+}

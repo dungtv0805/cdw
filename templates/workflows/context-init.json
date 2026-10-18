@@ -1,0 +1,87 @@
+{
+  "id": "context-init",
+  "name": "Initialize project context",
+  "description": "Analyze project and initialize knowledge structure with facts, constraints, and conventions.",
+  "whenToUse": "Starting work on a new project that needs structured context for workflow agents.",
+  "requestTypes": ["context-init", "init-context", "setup-knowledge", "project-setup"],
+  "team": [
+    { "id": "Analyst", "agent": "architect", "perspective": "Analyze the project structure, tech stack, and conventions to extract objective facts." },
+    { "id": "Reviewer", "agent": "reviewer", "perspective": "Verify extracted facts are accurate and complete, flag assumptions vs facts." },
+    { "id": "Writer", "agent": "synthesizer", "perspective": "Write clear, structured context files following the knowledge structure convention." }
+  ],
+  "texts": {
+    "knowledge-structure": "## Knowledge Structure Convention\n\nFiles go in `.claude/context/`:\n- `facts/` — Verified, objective (ALL agents read)\n- `perspectives/` — Role-specific viewpoints (role-scoped)\n- `decisions/` — Finalized ADRs with rationale\n- `open_issues/` — Unresolved questions under debate\n- `working/` — Transient task state (not authoritative)\n\nEach file needs a header:\n```yaml\n---\ntype: fact | perspective | decision | open_issue | working\nsource: human | agent:<role> | consensus\nconfidence: verified | unverified | contested\nscope: shared | role:<name>\nupdated: YYYY-MM-DD\n---\n```\n\n**Critical rules:**\n1. Only synthesizer writes to `facts/` or `decisions/` after verification\n2. Other agents write to `working/` first\n3. Decisions require rationale (min 20 chars)",
+    "changelist-format": "## Change-list format (context-changes.json)\n\nThe artifact MUST be a single JSON object applied by `dw apply <runId>`:\n\n```json\n{\n  \"version\": 1,\n  \"changes\": [\n    { \"op\": \"create\", \"path\": \"facts/architecture.md\", \"content\": \"---\\ntype: fact\\nsource: agent:architect\\nconfidence: verified\\nscope: shared\\nupdated: YYYY-MM-DD\\n---\\n\\n# Architecture\\n...\" }\n  ]\n}\n```\n\n**Rules:**\n- `op`: create | update | delete\n- `path`: relative to .claude/context/, starts with facts/ perspectives/ decisions/ open_issues/ working/, ends in .md\n- `content`: REQUIRED for create/update (full file incl. YAML header), FORBIDDEN for delete\n- The YAML header `type:` must match the folder: facts→fact, decisions→decision, open_issues→open_issue, perspectives→perspective, working→working\n- `dw apply` validates paths + headers, writes atomically, and verifies with SHA-256. Any violation aborts the whole apply."
+  },
+  "context": {
+    "L0": ["brief", "team", "text:knowledge-structure"],
+    "L1": []
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "analyze",
+      "title": "Analyze project",
+      "goal": "Analyst explores project structure, reads key files (package.json, README, config files, src/ structure). Extract: tech stack, frameworks, conventions, architecture patterns, test setup, build tools.",
+      "participants": ["Analyst"],
+      "instructions": [
+        "Read package.json, tsconfig.json, and similar config files",
+        "Identify main directories and their purposes",
+        "Note coding conventions from existing code",
+        "List technologies, frameworks, and key dependencies",
+        "Output facts as structured JSON with confidence levels"
+      ]
+    },
+    {
+      "kind": "explore",
+      "id": "review-facts",
+      "title": "Review extracted facts",
+      "goal": "Reviewer verifies the extracted facts, separates verified facts from assumptions, flags anything that needs human clarification.",
+      "participants": ["Reviewer"],
+      "context": { "L1": ["phase:analyze"] },
+      "instructions": [
+        "For each fact, verify it can be confirmed from project files",
+        "Mark as 'verified' only if you can cite the source",
+        "Mark as 'unverified' if it's an inference or assumption",
+        "Flag contradictions or unclear areas as 'contested'",
+        "List questions that need human input"
+      ]
+    },
+    {
+      "kind": "escalate",
+      "id": "clarify",
+      "title": "Clarify with user",
+      "goal": "Get user input on contested facts and project-specific conventions not evident from code."
+    },
+    {
+      "kind": "synthesize",
+      "id": "build-changelist",
+      "title": "Build the change-list",
+      "goal": "Produce a deterministic change-list artifact that 'dw apply' writes to .claude/context/. Do NOT write files directly — emit the change-list only.",
+      "owner": "Writer",
+      "reviewers": ["Analyst", "Reviewer"],
+      "artifact": {
+        "name": "context-changes.json",
+        "sections": ["version", "changes"]
+      },
+      "context": { "L1": ["phase:review-facts", "decisions", "text:changelist-format"] },
+      "instructions": [
+        "Emit the artifact as a SINGLE JSON object matching text:changelist-format exactly — no markdown, no prose outside the JSON",
+        "Add a create entry for facts/architecture.md with verified tech stack and patterns",
+        "Add a create entry for facts/conventions.md with coding standards",
+        "Add a create entry for facts/glossary.md if domain terms are found",
+        "Add create entries under open_issues/ for any facts too uncertain to verify",
+        "Every create carries full file content including the YAML header (type: fact or open_issue, source, confidence, scope, updated)",
+        "Do NOT write any file yourself — 'dw apply <runId>' performs the writes with path+header validation and SHA-256 verification"
+      ]
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "Project conventions are ambiguous or undocumented",
+      "Technology choices need confirmation",
+      "Architecture decisions are not evident from code"
+    ]
+  },
+  "bus": { "topics": ["facts", "questions"] }
+}

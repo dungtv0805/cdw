@@ -1,0 +1,90 @@
+{
+  "id": "role-context",
+  "name": "Build role-specific context",
+  "description": "Generate per-role perspective files so each agent role loads knowledge, facts, and rules relevant to its viewpoint — not everything.",
+  "whenToUse": "When agents need role-scoped context to avoid cognitive overload and hallucination from mixed perspectives.",
+  "requestTypes": ["role-context", "perspectives", "role-knowledge", "scoped-context"],
+  "team": [
+    {
+      "id": "Mapper",
+      "agent": "architect",
+      "perspective": "Map which facts, patterns, and rules are relevant to each agent role based on their mission and viewpoint."
+    },
+    {
+      "id": "Challenger",
+      "agent": "skeptic",
+      "perspective": "Challenge over-inclusion — ensure each role gets only what it needs, not everything. Prevent cognitive overload."
+    },
+    {
+      "id": "Writer",
+      "agent": "synthesizer",
+      "perspective": "Write focused perspective files per role following the knowledge structure convention."
+    }
+  ],
+  "texts": {
+    "perspective-rules": "## Role-Scoped Context Rules\n\n**Goal:** Each role loads ONLY context relevant to its viewpoint. A combined context of all perspectives causes hallucination and subjectivity (research: knowledge-accumulation-patterns.md).\n\n**Perspective file structure** (`.claude/context/perspectives/<role>.md`):\n```yaml\n---\ntype: perspective\nsource: agent:<role>\nconfidence: verified\nscope: role:<role>\nupdated: YYYY-MM-DD\n---\n```\n\n**Content per perspective:**\n- **Lens**: What this role focuses on\n- **Relevant facts**: Which facts/* files matter to this role\n- **Relevant patterns**: Which design patterns this role applies\n- **Rules**: Role-specific constraints when designing/debating/implementing\n- **Red flags**: What this role watches for\n\n**Access rule:** An agent reads `facts/*` + `decisions/*` (shared) + its OWN `perspectives/<role>.md`. It does NOT read other roles' perspectives.\n\n**Optimal scope:** 2-3 reference points per role. More causes coordination overload.",
+    "available-roles": "## Agent Roles to Build Perspectives For\n\nBased on templates/agents/:\n- **architect**: System boundaries, integration, data flow, scalability\n- **engineer**: Implementation feasibility, effort, risk, TDD\n- **pm**: User value, scope, priorities\n- **reviewer**: Code/artifact quality\n- **skeptic**: Devil's advocate, challenges assumptions\n- **synthesizer**: Drives to consensus, writes decisions\n- **red-team**: Offensive security\n- **blue-team**: Defensive security\n- **sre-lead**: Reliability, operations\n- **compliance**: Regulatory adherence\n- **investigator**: Root cause analysis\n- **advocate**: Argues for proposals"
+  },
+  "context": {
+    "L0": ["brief", "team", "text:perspective-rules", "text:available-roles"],
+    "L1": ["workspace:facts/architecture", "workspace:facts/design-patterns"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "inventory-knowledge",
+      "title": "Inventory available knowledge",
+      "goal": "Mapper reads all facts/ files and lists the knowledge available to distribute across roles.",
+      "participants": ["Mapper"],
+      "instructions": [
+        "Read all files in .claude/context/facts/",
+        "List each fact/pattern and tag which roles would care about it",
+        "Note the project's domain and key technical concerns",
+        "Identify roles that are actually used in this project's workflows"
+      ]
+    },
+    {
+      "kind": "debate",
+      "id": "scope-perspectives",
+      "title": "Scope each role's context",
+      "goal": "Debate what each role needs. Challenger prevents over-inclusion; Mapper ensures nothing critical is missed.",
+      "participants": ["Mapper", "Challenger"],
+      "maxRounds": 3,
+      "context": { "L1": ["phase:inventory-knowledge"] },
+      "instructions": [
+        "For each role, propose its relevant facts/patterns/rules",
+        "Challenger: cut anything not directly tied to the role's lens",
+        "Keep each perspective to 2-3 key reference points",
+        "Agree on the final scope per role",
+        "Flag roles that don't need a perspective file (handled by shared facts)"
+      ]
+    },
+    {
+      "kind": "synthesize",
+      "id": "write-perspectives",
+      "title": "Write perspective files",
+      "goal": "Writer creates focused perspective files for each role that needs one.",
+      "owner": "Writer",
+      "reviewers": ["Mapper", "Challenger"],
+      "artifact": {
+        "name": "perspectives-created.md",
+        "sections": ["Perspectives created", "Scope per role", "Roles using shared facts only", "Rationale"]
+      },
+      "context": { "L1": ["phase:scope-perspectives"] },
+      "instructions": [
+        "Create .claude/context/perspectives/<role>.md for each role needing scoped context",
+        "Follow the perspective file structure with proper header",
+        "Include: lens, relevant facts, relevant patterns, rules, red flags",
+        "Keep focused — 2-3 reference points per role",
+        "List which roles use shared facts only (no perspective file needed)"
+      ]
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "A role's scope is ambiguous and needs user input",
+      "Two roles have overlapping concerns that need boundary clarification"
+    ]
+  },
+  "bus": { "topics": ["knowledge-map", "scoping"] }
+}

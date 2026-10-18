@@ -1,0 +1,74 @@
+{
+  "$schema": "./staffing.schema.json",
+  "tags": {
+    "architecture": "System design, boundaries, data flow, scalability, long-term health",
+    "implementation": "Code writing, testing, debugging, technical feasibility",
+    "product": "User problems, scope, priorities, success criteria, MVP definition",
+    "review": "Independent verification, quality checks, approval workflows",
+    "security-offense": "Attack surface analysis, threat modeling, exploit paths",
+    "security-defense": "Controls, detection, response, defense in depth",
+    "compliance": "Privacy, regulation, audit, data retention obligations",
+    "operations": "Incident response, reliability, monitoring, mitigation",
+    "investigation": "Evidence gathering, hypothesis formation, root cause analysis",
+    "debate-advocate": "Building the strongest case for a proposal",
+    "debate-skeptic": "Finding failure modes, hidden costs, alternatives",
+    "synthesis": "Decision criteria, trade-off analysis, consensus building",
+    "communication": "User interaction, question batching, clear writing",
+    "planning": "Work breakdown, task sequencing, deliverable definition",
+    "testing": "Test-driven development, verification, regression testing"
+  },
+  "agents": {
+    "architect": {
+      "tags": ["architecture", "planning", "synthesis"],
+      "estimatedTokens": 8000
+    },
+    "engineer": {
+      "tags": ["implementation", "testing", "investigation"],
+      "estimatedTokens": 10000
+    },
+    "pm": {
+      "tags": ["product", "communication"],
+      "estimatedTokens": 6000
+    },
+    "reviewer": {
+      "tags": ["review", "testing"],
+      "estimatedTokens": 5000
+    },
+    "red-team": {
+      "tags": ["security-offense", "investigation"],
+      "estimatedTokens": 6000
+    },
+    "blue-team": {
+      "tags": ["security-defense", "synthesis"],
+      "estimatedTokens": 6000
+    },
+    "compliance": {
+      "tags": ["compliance", "review"],
+      "estimatedTokens": 5000
+    },
+    "sre-lead": {
+      "tags": ["operations", "investigation", "synthesis"],
+      "estimatedTokens": 7000
+    },
+    "investigator": {
+      "tags": ["investigation", "testing"],
+      "estimatedTokens": 6000
+    },
+    "advocate": {
+      "tags": ["debate-advocate", "communication"],
+      "estimatedTokens": 5000
+    },
+    "skeptic": {
+      "tags": ["debate-skeptic", "investigation"],
+      "estimatedTokens": 5000
+    },
+    "synthesizer": {
+      "tags": ["synthesis", "communication"],
+      "estimatedTokens": 5000
+    },
+    "liaison": {
+      "tags": ["communication"],
+      "estimatedTokens": 3000
+    }
+  }
+}

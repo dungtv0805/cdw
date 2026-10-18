@@ -17,7 +17,8 @@
   ],
   "rules": [
     "Drop an objection once it is answered with evidence, and say so.",
-    "Separate fatal flaws from risks that can be mitigated."
+    "Separate fatal flaws from risks that can be mitigated.",
+    "Challenge a number or a claim about behaviour that nobody reproduced, and never concede to one."
   ],
   "escalateWhen": ["Accepting a risk (downtime, data loss, compliance exposure) is a business call."],
   "groups": ["debaters"]

@@ -1,20 +1,43 @@
 {
   "id": "product-design",
   "name": "Product design debate",
-  "description": "PM, Engineer and Architect debate a feature over the bus and produce a reviewed spec; only blocking business questions reach the user.",
+  "description": "PM, Engineer and Architect cross-examine a feature over the bus (specialists join when the brief needs them) and design it top-down: the high-level decisions, then the components that realise them, then the testable requirements, each level tracing to the one above; only blocking business questions reach the user.",
   "whenToUse": "A new feature or product change needs a spec: scope, requirements, design and decisions.",
-  "requestTypes": ["feature", "product", "spec", "requirements"],
+  "requestTypes": [
+    "feature",
+    "product",
+    "spec",
+    "requirements"
+  ],
   "team": [
-    { "id": "PM", "agent": "pm" },
-    { "id": "Engineer", "agent": "engineer" },
-    { "id": "Architect", "agent": "architect" }
+    {
+      "id": "PM",
+      "agent": "pm"
+    },
+    {
+      "id": "Engineer",
+      "agent": "engineer"
+    },
+    {
+      "id": "Architect",
+      "agent": "architect"
+    }
   ],
   "texts": {
-    "definition-of-done": "The spec is done when: the user problem and success criteria are explicit; goals and non-goals are listed; every requirement is testable; each key decision has its rationale and the rejected alternative; risks have mitigations; open questions have an owner."
+    "definition-of-done": "The spec is done when: the user problem and success criteria are explicit; goals and non-goals are listed; every requirement is testable; each key decision has its rationale and the rejected alternative; risks have mitigations; open questions have an owner. Number every requirement R1, R2, \u2026; each traces to the H and C points it details, and every C point is detailed by a requirement or deferred.",
+    "design-guide": "The high-level design makes the decisions that shape the solution: scope, boundaries, data and control flow, the approach with the alternatives rejected, the main risks. Number each decision H1, H2, \u2026 and leave component and requirement detail to the next levels.",
+    "components-guide": "The component design realises the high-level decisions: each component or interface C1, C2, \u2026 with its responsibility, its interfaces and data, and the H decisions it realises (tracesTo). Every H decision is realised by a component or deferred with its reason."
   },
   "context": {
-    "L0": ["brief", "team"],
-    "L1": ["text:definition-of-done", "decisions"]
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "text:definition-of-done",
+      "decisions",
+      "knowledge:type=perspective"
+    ]
   },
   "phases": [
     {
@@ -22,7 +45,23 @@
       "id": "explore",
       "title": "Explore",
       "goal": "Each role analyses the brief from its perspective and states a position: proposals, concerns and questions.",
-      "instructions": ["Read the codebase areas the brief touches before forming your position."]
+      "instructions": [
+        "Read the codebase areas the brief touches before forming your position."
+      ],
+      "mayNeed": [
+        "security-offense",
+        "operations",
+        "compliance"
+      ],
+      "context": {
+        "L1": [
+          "knowledge:type=decision",
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
     },
     {
       "kind": "debate",
@@ -30,7 +69,21 @@
       "title": "Debate",
       "goal": "Challenge and refine the positions until the team agrees on scope, approach and architecture.",
       "maxRounds": 3,
-      "context": { "L1": ["phase:explore"] }
+      "context": {
+        "L1": [
+          "phase:explore",
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=decision"
+        ]
+      },
+      "protocol": "cross-examination",
+      "mayNeed": [
+        "security-offense",
+        "operations",
+        "compliance"
+      ]
     },
     {
       "kind": "escalate",
@@ -40,11 +93,90 @@
     },
     {
       "kind": "synthesize",
+      "id": "design",
+      "title": "High-level design",
+      "goal": "Write the high-level decisions the team agreed on and get them approved by the PM and the Engineer.",
+      "owner": "Architect",
+      "reviewers": [
+        "PM",
+        "Engineer"
+      ],
+      "artifact": {
+        "name": "design.md",
+        "sections": [
+          "Scope and constraints",
+          "Decisions",
+          "Alternatives rejected",
+          "Risks"
+        ]
+      },
+      "trace": {
+        "prefix": "H"
+      },
+      "context": {
+        "L1": [
+          "phase:debate",
+          "text:design-guide",
+          "knowledge:type=rule,topic=specification"
+        ],
+        "L2": [
+          "knowledge:type=decision"
+        ]
+      }
+    },
+    {
+      "kind": "synthesize",
+      "id": "components",
+      "title": "Component design",
+      "goal": "Design the components and interfaces that realise the high-level decisions, and get the Architect to approve them.",
+      "owner": "Engineer",
+      "reviewers": [
+        "Architect"
+      ],
+      "mayNeed": [
+        "security-defense",
+        "operations"
+      ],
+      "artifact": {
+        "name": "components.md",
+        "sections": [
+          "Components",
+          "Interfaces and data",
+          "Testing approach",
+          "Deferred decisions"
+        ]
+      },
+      "trace": {
+        "prefix": "C",
+        "from": [
+          "design"
+        ]
+      },
+      "context": {
+        "L1": [
+          "phase:design",
+          "artifact:design.md",
+          "text:components-guide",
+          "knowledge:type=rule,topic=specification"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "synthesize",
       "id": "spec",
       "title": "Spec",
-      "goal": "Write the agreed spec and get it approved by the other roles.",
-      "owner": "Architect",
-      "reviewers": ["PM", "Engineer"],
+      "goal": "Write the testable requirements that detail the design and get them approved by the Architect and the Engineer.",
+      "owner": "PM",
+      "reviewers": [
+        "Architect",
+        "Engineer"
+      ],
+      "mayNeed": [
+        "compliance"
+      ],
       "artifact": {
         "name": "spec.md",
         "sections": [
@@ -58,7 +190,22 @@
           "Open questions"
         ]
       },
-      "context": { "L1": ["phase:debate"] }
+      "trace": {
+        "prefix": "R",
+        "from": [
+          "design",
+          "components"
+        ]
+      },
+      "context": {
+        "L1": [
+          "phase:components",
+          "artifact:design.md",
+          "artifact:components.md",
+          "text:definition-of-done",
+          "knowledge:type=rule,topic=specification"
+        ]
+      }
     }
   ],
   "escalation": {
@@ -69,5 +216,9 @@
       "Business context the team cannot see"
     ]
   },
-  "bus": { "topics": ["decisions"] }
+  "bus": {
+    "topics": [
+      "decisions"
+    ]
+  }
 }

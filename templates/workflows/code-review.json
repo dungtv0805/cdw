@@ -1,0 +1,132 @@
+{
+  "id": "code-review",
+  "name": "Code review",
+  "description": "Three reviewers inspect the same change independently \u2014 the project's checks and rules, the design, the tests \u2014 then cross-examine their findings and rank the ones that stood in one review report.",
+  "whenToUse": "A branch or commit range should be reviewed before it is merged, independently of whoever built it: a team's delivery, a large change, a change to core contracts. Name the branch and its base, or the commits, in the brief. Its approval is not a merge gate: measured on a delivery with nine known major defects, it found none. Use its findings, and review the change yourself.",
+  "requestTypes": [
+    "code-review",
+    "branch-review",
+    "pre-merge-review",
+    "review"
+  ],
+  "team": [
+    {
+      "id": "GateReviewer",
+      "agent": "reviewer",
+      "name": "Gate Reviewer",
+      "perspective": "The project's checks and rules: runs the gates and goes through every rule given to it against the diff."
+    },
+    {
+      "id": "DesignReviewer",
+      "agent": "architect",
+      "name": "Design Reviewer",
+      "perspective": "Where each change belongs: extension points instead of branches on a variant, shared contracts that stay generic, nothing re-implemented that already exists."
+    },
+    {
+      "id": "TestReviewer",
+      "agent": "engineer",
+      "name": "Test Reviewer",
+      "perspective": "Whether each new or changed test fails without its change: it drives the real path and asserts the behaviour, not hand-built state, and no existing test was weakened."
+    }
+  ],
+  "texts": {
+    "review-scope": "The change to review is named in the brief: a branch and its base, or a commit range. Review the diff (`git diff <base>...<branch>`, `git log <base>..<branch>`), not the commit messages or any report of the work, and read the surrounding code where a finding depends on it. Never change files and never check out, reset or switch branches: inspect with read-only commands (a temporary `git worktree` outside the project is fine; remove it afterwards). A finding names the file and symbol, or the command and its output; what is wrong; the rule or requirement it breaks; its severity (blocking, major or minor); and how to reproduce it. A finding nobody can reproduce is not a finding."
+  },
+  "context": {
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "decisions",
+      "text:review-scope"
+    ]
+  },
+  "escalation": {
+    "triggers": [
+      "Merging with a known risk is a business call",
+      "Access the review needs and does not have"
+    ]
+  },
+  "bus": {
+    "topics": [
+      "findings"
+    ]
+  },
+  "phases": [
+    {
+      "kind": "task",
+      "id": "inspect",
+      "title": "Inspect",
+      "goal": "Inspect the change from your angle and report each finding with its evidence.",
+      "participants": "all",
+      "instructions": [
+        "Run the checks your angle needs yourself and quote each command with its result.",
+        "Go through every rule given to you and report each as kept or broken, with the file and symbol of each break."
+      ],
+      "context": {
+        "L1": [
+          "knowledge:type=rule,topic=code-review",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "knowledge:type=decision",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "debate",
+      "id": "challenge",
+      "title": "Challenge",
+      "goal": "Cross-examine the findings: challenge any finding you cannot reproduce or whose severity is wrong, concede what you cannot defend, and agree the ranked list.",
+      "participants": [
+        "GateReviewer",
+        "DesignReviewer",
+        "TestReviewer"
+      ],
+      "maxRounds": 3,
+      "protocol": "cross-examination",
+      "context": {
+        "L1": [
+          "phase:inspect",
+          "knowledge:type=rule,topic=evidence"
+        ]
+      }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Ask the user only about findings whose acceptance is a business call."
+    },
+    {
+      "kind": "synthesize",
+      "id": "report",
+      "title": "Report",
+      "goal": "Write the review report from the findings that stood, ranked by severity, and have the other two reviewers confirm it.",
+      "owner": "GateReviewer",
+      "reviewers": [
+        "DesignReviewer",
+        "TestReviewer"
+      ],
+      "maxRevisions": 1,
+      "artifact": {
+        "name": "review-report.md",
+        "sections": [
+          "Verdict",
+          "Blocking and major findings",
+          "Minor findings",
+          "Rules checked",
+          "Checks run",
+          "Withdrawn findings"
+        ]
+      },
+      "context": {
+        "L1": [
+          "phase:challenge"
+        ]
+      }
+    }
+  ]
+}

@@ -1,24 +1,59 @@
 {
   "id": "design-debate",
   "name": "Design decision debate",
-  "description": "Advocate and Skeptic argue a design proposal; the Synthesizer drives it to an explicit decision record (ADR).",
+  "description": "Advocate and Skeptic cross-examine a design proposal claim by claim (specialists join when the brief needs them); the Synthesizer writes the decision record from the claims that stood, with numbered decisions.",
   "whenToUse": "A design, architecture or technology choice must be evaluated and decided, with its trade-offs recorded.",
-  "requestTypes": ["design-review", "adr", "architecture-decision", "trade-off"],
+  "requestTypes": [
+    "design-review",
+    "adr",
+    "architecture-decision",
+    "trade-off"
+  ],
   "team": [
-    { "id": "Advocate", "agent": "advocate" },
-    { "id": "Skeptic", "agent": "skeptic" },
-    { "id": "Synthesizer", "agent": "synthesizer" }
+    {
+      "id": "Advocate",
+      "agent": "advocate"
+    },
+    {
+      "id": "Skeptic",
+      "agent": "skeptic"
+    },
+    {
+      "id": "Synthesizer",
+      "agent": "synthesizer"
+    }
   ],
   "context": {
-    "L0": ["brief", "team"],
-    "L1": ["decisions"]
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "decisions",
+      "knowledge:type=perspective"
+    ]
   },
   "phases": [
     {
       "kind": "explore",
       "id": "positions",
       "title": "Positions",
-      "goal": "The Advocate states the case for, the Skeptic the case against, the Synthesizer the decision criteria."
+      "goal": "The Advocate states the case for, the Skeptic the case against, the Synthesizer the decision criteria.",
+      "mayNeed": [
+        "architecture",
+        "security-offense",
+        "operations",
+        "compliance"
+      ],
+      "context": {
+        "L1": [
+          "knowledge:type=decision",
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
     },
     {
       "kind": "debate",
@@ -26,7 +61,19 @@
       "title": "Debate",
       "goal": "Test every argument against the criteria until the decision is clear or the disagreement is stated precisely.",
       "maxRounds": 3,
-      "context": { "L1": ["phase:positions"] }
+      "context": {
+        "L1": [
+          "phase:positions",
+          "knowledge:type=rule,topic=evidence"
+        ]
+      },
+      "protocol": "cross-examination",
+      "mayNeed": [
+        "architecture",
+        "security-offense",
+        "operations",
+        "compliance"
+      ]
     },
     {
       "kind": "escalate",
@@ -40,12 +87,34 @@
       "title": "Decision record",
       "goal": "Write the decision record and have both debaters confirm it represents their arguments fairly.",
       "owner": "Synthesizer",
-      "reviewers": ["Advocate", "Skeptic"],
+      "reviewers": [
+        "Advocate",
+        "Skeptic"
+      ],
       "artifact": {
         "name": "adr.md",
-        "sections": ["Context", "Decision drivers", "Options considered", "Decision", "Consequences", "Dissent and open questions"]
+        "sections": [
+          "Context",
+          "Decision drivers",
+          "Options considered",
+          "Decision",
+          "Consequences",
+          "Dissent and open questions"
+        ]
       },
-      "context": { "L1": ["phase:debate"] }
+      "context": {
+        "L1": [
+          "phase:debate",
+          "knowledge:type=rule,topic=evidence",
+          "knowledge:type=rule,topic=specification"
+        ],
+        "L2": [
+          "knowledge:type=decision"
+        ]
+      },
+      "trace": {
+        "prefix": "D"
+      }
     }
   ],
   "escalation": {
@@ -54,5 +123,9 @@
       "Accepting a risk is a business decision"
     ]
   },
-  "bus": { "topics": ["decisions"] }
+  "bus": {
+    "topics": [
+      "decisions"
+    ]
+  }
 }

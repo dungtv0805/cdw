@@ -25,6 +25,9 @@ You get the spec, the plan, the commits and the review verdict. Nothing is pushe
 |--------------|-----|
 | let several AI agents talk to each other and solve a task together | `/cdw:dw <template> <request>` |
 | go from a feature request to reviewed, committed code (PM → Architect → Engineer → Reviewer) | `/cdw:dw feature-delivery …` |
+| make a small, clear change quickly: a short cross-examination, at most three items, one review | `/cdw:dw quick-delivery …` |
+| fix a bug test first: reproduce it, agree the root cause, then a failing test and the fix | `/cdw:dw bugfix …` |
+| have three independent reviewers (rules, design, tests) review a branch before it is merged | `/cdw:dw code-review …` |
 | write a product spec with a PM, an engineer and an architect who challenge each other | `/cdw:dw product-design …` |
 | have agents debate a technical decision and record it as an ADR | `/cdw:dw design-debate …` |
 | run a security review or threat model with red-team and blue-team agents | `/cdw:dw security-review …` |
@@ -193,9 +196,47 @@ The `dw` CLI is on your `PATH` with the install script. With the plugin, it live
 | `dw tail <run> [--follow]`, `dw status [<run>]` | follow and inspect runs |
 | `dw inbox`, `dw reply <run> <seq> <answer>` | read and answer what the team sent you |
 | `dw export <run>` | write the transcript to Markdown |
-| `dw doctor [--json]` | check the setup of the current project |
+| `dw doctor [--json] [--context]` | check the setup of the current project; `--context` checks `.claude/context/` health |
 | `dw setup` | install `/dw` for every project (the installer runs it) |
-| `dw init` | wire only the current project (`.mcp.json`, `/dw`, `.gitignore`) |
+| `dw init [--scaffold]` | wire only the current project; `--scaffold` generates draft context files |
+
+## Project context scaffolding
+
+When adopting cdw in a new project, `dw init --scaffold` generates draft `.claude/context/*.md` files so agents understand your codebase from the start.
+
+```bash
+dw init --scaffold
+```
+
+This creates `.claude/context/` with:
+
+| File | When generated | Content |
+|------|----------------|---------|
+| `architecture.md` | Always | Project structure, key directories, detected patterns |
+| `conventions.md` | Config files detected | Detected linting/formatting config (ESLint, Prettier, Biome, etc.) |
+| `testing.md` | Complex test setup | Test frameworks, e2e patterns (only for projects with e2e + unit) |
+| `api-conventions.md` | API framework detected | Endpoint patterns, auth hints |
+| `domain.md` | README has content | Business glossary extracted from docs |
+
+Each file uses confidence tiers:
+- **HIGH** — written as-is, based on clear detection (e.g., `jest` in `package.json`)
+- **MEDIUM** — written with `<!-- TODO: verify ... -->` markers for you to review
+- **LOW** — file is skipped (except `architecture.md`, which always generates)
+
+### Checking context health
+
+After scaffolding, track your progress filling in the TODOs:
+
+```bash
+dw doctor --context
+```
+
+This reports:
+- Whether `.claude/context/` exists
+- How many context files you have
+- How many `<!-- TODO: ... -->` markers remain
+
+TODOs are informational: they don't fail the check. Resolve them at your own pace.
 
 ## Customize
 

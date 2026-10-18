@@ -1,0 +1,128 @@
+{
+  "id": "dynamic-team",
+  "name": "Dynamic team assembly",
+  "description": "Core team analyzes task and dynamically requests specialists from project registry based on actual needs.",
+  "whenToUse": "Complex tasks where required expertise is unknown upfront, or when the task scope may expand during execution.",
+  "requestTypes": ["dynamic-team", "adaptive-workflow", "specialist-request", "flexible-team"],
+  "team": [
+    {
+      "id": "Coordinator",
+      "agent": "pm",
+      "perspective": "Analyze task requirements, identify needed expertise, coordinate specialist requests.",
+      "extraRules": [
+        "Before requesting a specialist, verify the need is concrete and cannot be handled by existing team",
+        "Provide clear scope and context when requesting specialists",
+        "Track all specialist contributions for final synthesis"
+      ],
+      "context": { "L1": ["workspace:perspectives/pm"] }
+    },
+    {
+      "id": "Analyst",
+      "agent": "architect",
+      "perspective": "Deep technical analysis, identify gaps in team expertise for the specific task.",
+      "context": { "L1": ["workspace:perspectives/architect"] }
+    },
+    {
+      "id": "Synthesizer",
+      "agent": "synthesizer",
+      "perspective": "Integrate contributions from all team members including late-joining specialists.",
+      "context": { "L1": ["workspace:perspectives/synthesizer"] }
+    }
+  ],
+  "texts": {
+    "dynamic-spawning": "## Dynamic Agent Spawning Protocol\n\n**Two-Tier Model:**\n- Tier 1 (Core Team): Coordinator, Analyst, Synthesizer — always present\n- Tier 2 (Specialists): Spawned on-demand from project's AgentRegistry\n\n**Requesting a Specialist:**\n1. Identify concrete need (not hypothetical)\n2. Check if existing team can handle it\n3. Request via structured format:\n   ```json\n   {\n     \"role\": \"security-reviewer\",\n     \"justification\": \"Task involves auth changes\",\n     \"scope\": \"Review auth flow only\",\n     \"estimatedTokens\": 2000\n   }\n   ```\n4. Human approval required for specialists >2K tokens\n\n**Context Handoff for Late-Joiners:**\n- Provide focused brief (not full history)\n- Include relevant artifacts only\n- State specific question/task\n\n**Available Specialists (from project registry):**\n- security-reviewer, dba-agent, performance-analyst\n- frontend-specialist, backend-specialist\n- compliance-reviewer, accessibility-expert",
+    "selection-criteria": "## Agent Selection Criteria\n\n**When to request a specialist:**\n- Task requires domain expertise not in core team\n- Risk level demands dedicated review (security, compliance)\n- Performance/scale concerns need specialist analysis\n- Specific technology stack expertise needed\n\n**When NOT to request:**\n- General development tasks (Analyst handles)\n- Coordination/synthesis (Coordinator/Synthesizer handle)\n- Vague \"might be useful\" scenarios\n- Already have 5+ specialists (coordination overhead)\n\n**Selection by capability tags:**\n- `security`: security-reviewer, red-team, blue-team\n- `database`: dba-agent\n- `performance`: performance-analyst, sre-lead\n- `frontend`: frontend-specialist, accessibility-expert\n- `compliance`: compliance-reviewer"
+  },
+  "context": {
+    "L0": ["brief", "team", "text:dynamic-spawning", "text:selection-criteria"],
+    "L1": ["workspace:facts/architecture"]
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "analyze-needs",
+      "title": "Analyze task and team needs",
+      "goal": "Core team analyzes the task to identify what expertise is needed beyond the core team.",
+      "participants": ["Coordinator", "Analyst"],
+      "instructions": [
+        "Read the brief carefully and identify all technical domains involved",
+        "Map required expertise against core team capabilities",
+        "List specific gaps that require specialist knowledge",
+        "For each gap, specify: domain, why core team can't handle, urgency",
+        "Prioritize: which specialists are blocking vs nice-to-have"
+      ]
+    },
+    {
+      "kind": "debate",
+      "id": "validate-needs",
+      "title": "Validate specialist requests",
+      "goal": "Debate whether each proposed specialist is truly needed or if core team can handle it.",
+      "participants": ["Coordinator", "Analyst"],
+      "maxRounds": 2,
+      "context": { "L1": ["phase:analyze-needs"] },
+      "instructions": [
+        "Challenge each specialist request — is it concrete or speculative?",
+        "Verify the gap cannot be covered by existing team",
+        "Agree on final list of specialists to request",
+        "Prioritize order if multiple specialists needed"
+      ]
+    },
+    {
+      "kind": "escalate",
+      "id": "approve-specialists",
+      "title": "Approve specialist requests",
+      "goal": "User approves which specialists to spawn based on cost/benefit.",
+      "instructions": [
+        "Present each specialist request with justification",
+        "Show estimated token cost per specialist",
+        "User can approve all, some, or none",
+        "If none approved, proceed with core team only"
+      ]
+    },
+    {
+      "kind": "task",
+      "id": "specialist-work",
+      "title": "Specialist contributions",
+      "goal": "Approved specialists perform their scoped analysis and contribute findings.",
+      "participants": "all",
+      "instructions": [
+        "Each specialist receives focused brief (not full history)",
+        "Specialist performs scoped analysis",
+        "Specialist posts findings to team via bus",
+        "Core team integrates specialist input"
+      ],
+      "context": { "L1": ["phase:validate-needs", "decisions"] }
+    },
+    {
+      "kind": "synthesize",
+      "id": "integrate",
+      "title": "Integrate all contributions",
+      "goal": "Synthesizer combines core team analysis with specialist findings into cohesive output.",
+      "owner": "Synthesizer",
+      "reviewers": ["Coordinator", "Analyst"],
+      "artifact": {
+        "name": "team-output.md",
+        "sections": ["Task summary", "Core team analysis", "Specialist contributions", "Integrated findings", "Recommendations", "Open questions"]
+      },
+      "context": { "L1": ["phase:specialist-work"] },
+      "instructions": [
+        "Summarize core team's analysis",
+        "Integrate each specialist's findings",
+        "Resolve any contradictions between specialists",
+        "Provide unified recommendations",
+        "Note which findings came from which team member"
+      ]
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "Specialist request exceeds token budget",
+      "No suitable specialist in registry for identified need",
+      "Specialists disagree on critical finding"
+    ]
+  },
+  "bus": {
+    "topics": ["specialist-requests", "findings", "integration"],
+    "maxMessagesPerAgent": 50
+  }
+}

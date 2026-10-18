@@ -1,0 +1,179 @@
+{
+  "id": "bugfix",
+  "name": "Bug fix",
+  "description": "Reproduce the bug, agree its root cause by cross-examining hypotheses with evidence, then fix it test first: the first work item is the test that fails for that cause, and a reviewer checks that the fix removes it.",
+  "whenToUse": "A bug with a reproduction or clear symptoms should be fixed in this project, not only investigated. Use incident-investigation when the cause is unknown and production evidence must be gathered first.",
+  "requestTypes": [
+    "bugfix",
+    "bug",
+    "defect",
+    "fix"
+  ],
+  "team": [
+    {
+      "id": "Investigator",
+      "agent": "investigator",
+      "perspective": "Reproduction and evidence: the exact command, input and output that show the bug, and the code path they run."
+    },
+    {
+      "id": "Engineer",
+      "agent": "engineer"
+    },
+    {
+      "id": "Reviewer",
+      "agent": "reviewer"
+    }
+  ],
+  "texts": {
+    "plan-guide": "Item 1 is the test that reproduces the bug: it fails before the fix, for the reason the agreed root cause names (say how you saw it fail). Then the fix: the smallest change that removes the root cause, not its symptom, with tests for the neighbouring cases the cause also affects. Each item's acceptance is a command and its expected result. Two to four items.",
+    "workspace-rules": "You work in the project directory, on the branch that is checked out: never create, switch or delete branches. Run `git status` before your first change; changes you did not make are not yours, so never stage, revert or delete them. Follow the rules given in this prompt, then the project's conventions (CLAUDE.md, the code around the change). Test first: a failing test for each behaviour, then the code, then the related test suite. Commit each work item, and each round of fixes, once its checks pass: stage only the files you changed (`git add <paths>`, never `-A` or `.`), with a message in the project's commit convention (CLAUDE.md, recent `git log`). Never push, merge, rebase, amend, reset, stash, force anything or rewrite history. Never commit secrets, credentials or build output. List each commit (short sha and subject) and each changed file in `changes`, and each check you ran with its outcome in `verification`.",
+    "review-checklist": "Review the commits listed under the delivered work (`git show <sha>`, or `git diff <first>^..<last>`), not their descriptions. Check that: the agreed root cause is removed, not only its symptom; each work item meets its acceptance criteria; tests exist, fail without the change and pass with it; the project's checks (tests, typecheck, lint, build: whatever it uses) pass when you run them; errors and edge cases are handled; there are no secrets, injection risks or unsafe commands; the code follows the existing patterns; there is no dead code, debug output or unrelated change; commits are scoped and follow the convention. Run the checks yourself and quote each command with its result: a verdict without them is not evidence. For each new or changed test, name the change that makes it fail; a test that would pass without it is a major issue. Go through the rules given in this prompt one by one and report each as kept or broken. Check that the first test fails without the fix (revert the fix in a temporary worktree outside the project, or show it from the diff)."
+  },
+  "context": {
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "decisions"
+    ]
+  },
+  "escalation": {
+    "triggers": [
+      "The fix changes behaviour users rely on",
+      "The bug cannot be reproduced and the user must decide how to proceed"
+    ]
+  },
+  "bus": {
+    "topics": [
+      "evidence",
+      "decisions"
+    ],
+    "maxMessagesPerAgent": 120
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "reproduce",
+      "title": "Reproduce",
+      "goal": "Reproduce the bug: the exact command or test and its output against the expected behaviour, and the code path it runs.",
+      "participants": [
+        "Investigator",
+        "Engineer"
+      ],
+      "instructions": [
+        "Read-only: run the reproduction, read logs and code, and change nothing."
+      ],
+      "context": {
+        "L1": [
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=decision",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "debate",
+      "id": "root-cause",
+      "title": "Root cause",
+      "goal": "Agree the root cause: each hypothesis is a claim with the evidence that discriminates it, settled by the cheapest decisive check.",
+      "participants": [
+        "Investigator",
+        "Engineer",
+        "Reviewer"
+      ],
+      "maxRounds": 3,
+      "protocol": "cross-examination",
+      "context": {
+        "L1": [
+          "phase:reproduce",
+          "knowledge:type=rule,topic=evidence"
+        ]
+      }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Ask the user only what blocks the fix and only the user can decide."
+    },
+    {
+      "kind": "plan",
+      "id": "plan",
+      "title": "Plan",
+      "goal": "Plan the fix: the failing test first, then the smallest change that removes the root cause.",
+      "owner": "Engineer",
+      "reviewers": [
+        "Reviewer"
+      ],
+      "maxItems": 4,
+      "artifact": {
+        "name": "plan.md",
+        "sections": [
+          "Root cause",
+          "Fix",
+          "Work items",
+          "Verification"
+        ]
+      },
+      "context": {
+        "L1": [
+          "phase:root-cause",
+          "text:plan-guide",
+          "knowledge:type=rule,topic=planning"
+        ],
+        "L2": [
+          "phase:reproduce",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "execute",
+      "id": "implement",
+      "title": "Implement",
+      "goal": "Implement the work item in the project, test first, and commit it.",
+      "items": "plan",
+      "assignees": [
+        "Engineer"
+      ],
+      "context": {
+        "L1": [
+          "artifact:plan.md",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "phase:root-cause",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "review",
+      "id": "review",
+      "title": "Review",
+      "goal": "Check that the fix removes the agreed root cause and that its first test fails without it; the Engineer fixes what the review finds.",
+      "owner": "Engineer",
+      "reviewers": [
+        "Reviewer"
+      ],
+      "maxRevisions": 2,
+      "context": {
+        "L1": [
+          "artifact:plan.md",
+          "phase:root-cause",
+          "text:review-checklist",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=code-review",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
+    }
+  ]
+}

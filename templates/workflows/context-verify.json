@@ -1,0 +1,99 @@
+{
+  "id": "context-verify",
+  "name": "Verify project context",
+  "description": "Audit existing context for staleness, contradictions, and completeness. Flag issues for resolution.",
+  "whenToUse": "Periodic health check of project context, or before major workflow runs to ensure context is current.",
+  "requestTypes": ["context-verify", "verify-context", "audit-knowledge", "context-health"],
+  "team": [
+    { "id": "Auditor", "agent": "reviewer", "perspective": "Systematically check context files for issues, staleness, and contradictions." },
+    { "id": "Challenger", "agent": "skeptic", "perspective": "Challenge assumptions, probe for hidden contradictions, test invalidation conditions." },
+    { "id": "Reporter", "agent": "synthesizer", "perspective": "Compile findings into actionable report with prioritized fixes." }
+  ],
+  "texts": {
+    "audit-checklist": "## Context Audit Checklist\n\n**Staleness checks:**\n- [ ] Check `invalidatedBy` conditions against current state\n- [ ] Verify timestamps are recent (flag if >30 days old)\n- [ ] Check if technology versions have changed\n- [ ] Verify file paths referenced still exist\n\n**Contradiction checks:**\n- [ ] Cross-reference facts with decisions\n- [ ] Check for conflicting statements across files\n- [ ] Verify perspectives don't contradict facts\n- [ ] Check decision rationales are still valid\n\n**Completeness checks:**\n- [ ] All required sections present in files\n- [ ] Headers properly formatted\n- [ ] Rationale present for all decisions\n- [ ] Sources cited for facts\n\n**Severity levels:**\n- **Critical**: Contradictions that could cause incorrect agent behavior\n- **Warning**: Stale content that may mislead\n- **Info**: Minor issues or improvement suggestions"
+  },
+  "context": {
+    "L0": ["brief", "team", "text:audit-checklist"],
+    "L1": []
+  },
+  "phases": [
+    {
+      "kind": "explore",
+      "id": "inventory",
+      "title": "Inventory context files",
+      "goal": "Auditor lists all context files and their metadata (type, source, confidence, updated date).",
+      "participants": ["Auditor"],
+      "instructions": [
+        "List all files in .claude/context/ recursively",
+        "Parse headers from each file",
+        "Create inventory with: path, type, source, confidence, updated, size",
+        "Flag files without proper headers",
+        "Note files that haven't been updated in >30 days"
+      ]
+    },
+    {
+      "kind": "explore",
+      "id": "deep-audit",
+      "title": "Deep content audit",
+      "goal": "Challenger probes each file for issues, testing invalidation conditions and looking for contradictions.",
+      "participants": ["Challenger"],
+      "context": { "L1": ["phase:inventory"] },
+      "instructions": [
+        "For each decision with `invalidatedBy`, check if conditions are now true",
+        "Cross-reference facts across files for contradictions",
+        "Verify referenced file paths still exist in project",
+        "Check if technology versions in facts match current project",
+        "List all findings with severity level"
+      ]
+    },
+    {
+      "kind": "debate",
+      "id": "prioritize",
+      "title": "Prioritize findings",
+      "goal": "Debate the severity and priority of each finding. Agree on what needs immediate action vs. future cleanup.",
+      "participants": ["Auditor", "Challenger"],
+      "maxRounds": 2,
+      "context": { "L1": ["phase:deep-audit"] },
+      "instructions": [
+        "Review each finding's severity classification",
+        "Debate borderline cases",
+        "Agree on priority order for fixes",
+        "Identify which issues need user input"
+      ]
+    },
+    {
+      "kind": "escalate",
+      "id": "user-review",
+      "title": "User review of critical issues",
+      "goal": "Present critical issues to user for decision on how to resolve contradictions or confirm stale facts."
+    },
+    {
+      "kind": "synthesize",
+      "id": "report",
+      "title": "Verification report",
+      "goal": "Compile findings into a structured report with actionable recommendations.",
+      "owner": "Reporter",
+      "reviewers": ["Auditor", "Challenger"],
+      "artifact": {
+        "name": "verification-report.md",
+        "sections": ["Executive summary", "Critical issues", "Warnings", "Recommendations", "Files audited", "Next audit date"]
+      },
+      "context": { "L1": ["phase:prioritize", "decisions"] },
+      "instructions": [
+        "Summarize overall context health (good/needs-attention/critical)",
+        "List critical issues with recommended fixes",
+        "List warnings with suggested actions",
+        "Provide specific file edits needed",
+        "Recommend next audit timeframe based on findings"
+      ]
+    }
+  ],
+  "escalation": {
+    "triggers": [
+      "Critical contradiction found between facts and decisions",
+      "Multiple stale decisions affect active workflows",
+      "Invalidation condition is ambiguous"
+    ]
+  },
+  "bus": { "topics": ["findings", "issues"] }
+}

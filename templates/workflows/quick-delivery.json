@@ -1,0 +1,152 @@
+{
+  "id": "quick-delivery",
+  "name": "Quick delivery",
+  "description": "A small, clear change in one short run: the Architect and the Engineer settle the approach in a short cross-examination, the Architect plans at most three items, the Engineer implements them test first, and one reviewer reviews the result.",
+  "whenToUse": "A small change whose scope is clear from the brief \u2014 one behaviour, a few files: a flag, a small command, a fix whose cause is known. Use feature-delivery when the scope is unclear or the change needs a written spec, and bugfix when the cause is not known yet.",
+  "requestTypes": [
+    "quick-delivery",
+    "small-change",
+    "quick-change",
+    "tweak"
+  ],
+  "team": [
+    {
+      "id": "Architect",
+      "agent": "architect"
+    },
+    {
+      "id": "Engineer",
+      "agent": "engineer"
+    },
+    {
+      "id": "Reviewer",
+      "agent": "reviewer"
+    }
+  ],
+  "texts": {
+    "plan-guide": "At most three items, each one reviewable change with its tests: a behaviour, not a layer. Each item names the files and the extension point it touches, and its acceptance names the test that fails first and the commands to run. Nothing beyond the brief.",
+    "workspace-rules": "You work in the project directory, on the branch that is checked out: never create, switch or delete branches. Run `git status` before your first change; changes you did not make are not yours, so never stage, revert or delete them. Follow the rules given in this prompt, then the project's conventions (CLAUDE.md, the code around the change). Test first: a failing test for each behaviour, then the code, then the related test suite. Commit each work item, and each round of fixes, once its checks pass: stage only the files you changed (`git add <paths>`, never `-A` or `.`), with a message in the project's commit convention (CLAUDE.md, recent `git log`). Never push, merge, rebase, amend, reset, stash, force anything or rewrite history. Never commit secrets, credentials or build output. List each commit (short sha and subject) and each changed file in `changes`, and each check you ran with its outcome in `verification`.",
+    "review-checklist": "Review the commits listed under the delivered work (`git show <sha>`, or `git diff <first>^..<last>`), not their descriptions. Check that: what the brief asks is delivered, or reported as open; each work item meets its acceptance criteria; tests exist, fail without the change and pass with it; the project's checks (tests, typecheck, lint, build: whatever it uses) pass when you run them; errors and edge cases are handled; there are no secrets, injection risks or unsafe commands; the code follows the existing patterns; there is no dead code, debug output or unrelated change; commits are scoped and follow the convention. Run the checks yourself and quote each command with its result: a verdict without them is not evidence. For each new or changed test, name the change that makes it fail; a test that would pass without it is a major issue. Go through the rules given in this prompt one by one and report each as kept or broken."
+  },
+  "context": {
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "decisions"
+    ]
+  },
+  "escalation": {
+    "triggers": [
+      "The change turns out larger than the brief: say so instead of growing it",
+      "A behaviour change users would notice"
+    ]
+  },
+  "bus": {
+    "topics": [
+      "decisions"
+    ],
+    "maxMessagesPerAgent": 80
+  },
+  "phases": [
+    {
+      "kind": "debate",
+      "id": "align",
+      "title": "Align",
+      "goal": "Agree how to make the change: where it goes (files, extension point), the test that proves it, and what it must not break.",
+      "participants": [
+        "Architect",
+        "Engineer"
+      ],
+      "maxRounds": 2,
+      "protocol": "cross-examination",
+      "instructions": [
+        "Read the code the change touches before you state a claim; claims cite file and symbol."
+      ],
+      "context": {
+        "L1": [
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=decision",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "escalate",
+      "id": "decide",
+      "title": "Decide",
+      "goal": "Ask the user only what blocks the change."
+    },
+    {
+      "kind": "plan",
+      "id": "plan",
+      "title": "Plan",
+      "goal": "Plan at most three small work items from the agreed approach.",
+      "owner": "Architect",
+      "reviewers": [],
+      "maxItems": 3,
+      "artifact": {
+        "name": "plan.md",
+        "sections": [
+          "Approach",
+          "Work items"
+        ]
+      },
+      "context": {
+        "L1": [
+          "phase:align",
+          "text:plan-guide",
+          "knowledge:type=rule,topic=planning"
+        ]
+      }
+    },
+    {
+      "kind": "execute",
+      "id": "implement",
+      "title": "Implement",
+      "goal": "Implement the work item in the project, test first, and commit it.",
+      "items": "plan",
+      "assignees": [
+        "Engineer"
+      ],
+      "context": {
+        "L1": [
+          "artifact:plan.md",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "phase:align",
+          "knowledge:type=fact"
+        ]
+      }
+    },
+    {
+      "kind": "review",
+      "id": "review",
+      "title": "Review",
+      "goal": "Check the delivered changes against the brief and the plan; the Engineer fixes what the review finds until the Reviewer approves.",
+      "owner": "Engineer",
+      "reviewers": [
+        "Reviewer"
+      ],
+      "maxRevisions": 1,
+      "context": {
+        "L1": [
+          "text:review-checklist",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=code-review",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "artifact:plan.md",
+          "phase:align",
+          "knowledge:type=fact"
+        ]
+      }
+    }
+  ]
+}

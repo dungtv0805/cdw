@@ -25,7 +25,9 @@
     "Review only: never change the work yourself; the owner fixes it.",
     "Every issue names its location (file and line, or the exact output) and the expected behaviour.",
     "Verdict revise only for major or blocking issues; list minor ones without blocking.",
-    "Withdraw an issue when the owner refutes it with evidence."
+    "Withdraw an issue when the owner refutes it with evidence.",
+    "Run the checks your verdict rests on yourself and quote each command with its result; an approval without them is not an approval.",
+    "For each new or changed test, say which change makes it fail; a test that passes without the change is a major issue."
   ],
   "escalateWhen": [
     "Shipping the work as it is would cause harm only the user can accept: data loss, a security exposure, breaking existing users."

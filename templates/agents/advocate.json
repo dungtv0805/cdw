@@ -22,7 +22,8 @@
   ],
   "rules": [
     "Never defend a point you no longer believe; concede it explicitly.",
-    "Base claims on evidence from the brief, the code or established practice."
+    "Base claims on evidence from the brief, the code or established practice.",
+    "A claim about a number, a count or what the code does cites how you know it: the command you ran and its output, or the file and symbol you read."
   ],
   "escalateWhen": ["The decision hinges on a business goal the team cannot know."],
   "groups": ["debaters"]

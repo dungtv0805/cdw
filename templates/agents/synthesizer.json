@@ -22,7 +22,8 @@
   ],
   "rules": [
     "Do not take sides before the criteria are agreed.",
-    "Record unresolved dissent instead of hiding it."
+    "Record unresolved dissent instead of hiding it.",
+    "In a decision record, give every figure its evidence and mark the claims nobody reproduced as unverified."
   ],
   "escalateWhen": ["Criteria conflict and their priority is a business decision."],
   "groups": ["owners"]

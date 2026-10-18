@@ -1,9 +1,15 @@
 {
   "id": "feature-delivery",
   "name": "Feature delivery",
-  "description": "End to end in one run: PM, Architect and Engineer align on a feature, the PM writes the spec, the Architect plans it as small work items, the Engineer implements and commits them one by one, and an independent Reviewer reviews the delivered changes until they are approved.",
+  "description": "End to end in one run, specified top-down: PM, Architect and Engineer align on a feature (specialists join the alignment and the review when the brief needs them), the PM writes the spec with numbered requirements, the Architect plans small work items that each trace to the requirements they deliver, the Engineer implements and commits them one by one, and an independent Reviewer reviews the delivered changes against the traced requirements until they are approved.",
   "whenToUse": "A feature or change should be specified, planned, implemented and reviewed in this project, not only designed. Start from an existing spec with --artifact spec.md=<path>.",
-  "requestTypes": ["feature-delivery", "end-to-end", "implement", "build", "deliver"],
+  "requestTypes": [
+    "feature-delivery",
+    "end-to-end",
+    "implement",
+    "build",
+    "deliver"
+  ],
   "team": [
     {
       "id": "PM",
@@ -11,24 +17,41 @@
       "extraSkills": [
         {
           "name": "elements-of-style:writing-clearly-and-concisely",
-          "phases": ["synthesize"],
+          "phases": [
+            "synthesize"
+          ],
           "how": "Write the spec plainly: active voice, concrete statements, no filler."
         }
       ]
     },
-    { "id": "Architect", "agent": "architect" },
-    { "id": "Engineer", "agent": "engineer" },
-    { "id": "Reviewer", "agent": "reviewer" }
+    {
+      "id": "Architect",
+      "agent": "architect"
+    },
+    {
+      "id": "Engineer",
+      "agent": "engineer"
+    },
+    {
+      "id": "Reviewer",
+      "agent": "reviewer"
+    }
   ],
   "texts": {
-    "definition-of-done": "The spec is done when: the user problem and success criteria are explicit; goals and non-goals are listed; every requirement is testable; each key decision has its rationale and the rejected alternative; risks have mitigations; open questions have an owner.",
-    "plan-guide": "Each work item is one reviewable change that one person finishes in one sitting: a behaviour with its tests, not a layer or a file. Its goal names the files and interfaces it touches when they are known; its acceptance criteria are checks someone can run (a command and its expected result) or inspect. Order the items so each builds on finished ones, and list in dependsOn only real prerequisites. The first item may set up shared scaffolding; the last one updates the docs when users see the change.",
-    "workspace-rules": "You work in the project directory, on the branch that is checked out: never create, switch or delete branches. Run `git status` before your first change; changes you did not make are not yours, so never stage, revert or delete them. Follow the project's conventions (CLAUDE.md, the code around the change). Test first: a failing test for each behaviour, then the code, then the related test suite. Commit each work item, and each round of fixes, once its checks pass: stage only the files you changed (`git add <paths>`, never `-A` or `.`), with a message in the project's commit convention (CLAUDE.md, recent `git log`). Never push, merge, rebase, amend, reset, stash, force anything or rewrite history. Never commit secrets, credentials or build output. List each commit (short sha and subject) and each changed file in `changes`, and each check you ran with its outcome in `verification`.",
-    "review-checklist": "Review the commits listed under the delivered work (`git show <sha>`, or `git diff <first>^..<last>`), not their descriptions. Check that: every requirement of spec.md is met or reported as open; each work item meets its acceptance criteria; tests exist, fail without the change and pass with it; the project's checks (tests, typecheck, lint, build: whatever it uses) pass when you run them; errors and edge cases are handled; there are no secrets, injection risks or unsafe commands; the code follows the existing patterns; there is no dead code, debug output or unrelated change; commits are scoped and follow the convention."
+    "definition-of-done": "The spec is done when: the user problem and success criteria are explicit; goals and non-goals are listed; every requirement is testable; each key decision has its rationale and the rejected alternative; risks have mitigations; open questions have an owner. Number every requirement R1, R2, \u2026 in the document and return each as a point, so the plan can trace to it.",
+    "plan-guide": "Each work item is one reviewable change that one person finishes in one sitting: a behaviour with its tests, not a layer or a file. Its goal names the files and interfaces it touches when they are known; its acceptance criteria are checks someone can run (a command and its expected result) or inspect. Order the items so each builds on finished ones, and list in dependsOn only real prerequisites. The first item may set up shared scaffolding; the last one updates the docs when users see the change. Each item names in tracesTo the requirements (R<n>) it delivers; a requirement no item delivers is deferred with its reason. Scaffolding and documentation items trace to the requirements they serve.",
+    "workspace-rules": "You work in the project directory, on the branch that is checked out: never create, switch or delete branches. Run `git status` before your first change; changes you did not make are not yours, so never stage, revert or delete them. Follow the rules given in this prompt, then the project's conventions (CLAUDE.md, the code around the change). Test first: a failing test for each behaviour, then the code, then the related test suite. Commit each work item, and each round of fixes, once its checks pass: stage only the files you changed (`git add <paths>`, never `-A` or `.`), with a message in the project's commit convention (CLAUDE.md, recent `git log`). Never push, merge, rebase, amend, reset, stash, force anything or rewrite history. Never commit secrets, credentials or build output. List each commit (short sha and subject) and each changed file in `changes`, and each check you ran with its outcome in `verification`.",
+    "review-checklist": "Review the commits listed under the delivered work (`git show <sha>`, or `git diff <first>^..<last>`), not their descriptions. Check that: every requirement of spec.md is met or reported as open; each work item meets its acceptance criteria; tests exist, fail without the change and pass with it; the project's checks (tests, typecheck, lint, build: whatever it uses) pass when you run them; errors and edge cases are handled; there are no secrets, injection risks or unsafe commands; the code follows the existing patterns; there is no dead code, debug output or unrelated change; commits are scoped and follow the convention. Use each item's traces: every requirement is delivered by the items that trace to it, or reported as open. Run the checks yourself and quote each command with its result: a verdict without them is not evidence. For each new or changed test, name the change that makes it fail; a test that would pass without it is a major issue. Go through the rules given in this prompt one by one and report each as kept or broken."
   },
   "context": {
-    "L0": ["brief", "team"],
-    "L1": ["decisions"]
+    "L0": [
+      "brief",
+      "team"
+    ],
+    "L1": [
+      "decisions",
+      "knowledge:type=perspective"
+    ]
   },
   "phases": [
     {
@@ -36,20 +59,51 @@
       "id": "explore",
       "title": "Explore",
       "goal": "Each role analyses the request from its perspective and states a position: proposals, concerns and questions.",
-      "participants": ["PM", "Architect", "Engineer"],
+      "participants": [
+        "PM",
+        "Architect",
+        "Engineer"
+      ],
       "instructions": [
         "Read the code the request touches and the project's docs (README, CLAUDE.md, docs/) before you form a position, and find out which modules are current."
       ],
-      "context": { "L1": ["artifact:spec.md"] }
+      "context": {
+        "L1": [
+          "artifact:spec.md",
+          "knowledge:type=decision",
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
     },
     {
       "kind": "debate",
       "id": "align",
       "title": "Align",
       "goal": "Agree on scope, approach and how the work splits into small deliverable steps: the spec and the plan the team commits to.",
-      "participants": ["PM", "Architect", "Engineer"],
+      "participants": [
+        "PM",
+        "Architect",
+        "Engineer"
+      ],
       "maxRounds": 3,
-      "context": { "L1": ["phase:explore", "artifact:spec.md"] }
+      "context": {
+        "L1": [
+          "phase:explore",
+          "artifact:spec.md",
+          "knowledge:type=rule,topic=evidence"
+        ],
+        "L2": [
+          "knowledge:type=decision"
+        ]
+      },
+      "mayNeed": [
+        "security-offense",
+        "operations",
+        "compliance"
+      ]
     },
     {
       "kind": "escalate",
@@ -63,7 +117,10 @@
       "title": "Spec",
       "goal": "Write the agreed spec and get it approved by the Architect and the Engineer.",
       "owner": "PM",
-      "reviewers": ["Architect", "Engineer"],
+      "reviewers": [
+        "Architect",
+        "Engineer"
+      ],
       "artifact": {
         "name": "spec.md",
         "sections": [
@@ -77,7 +134,22 @@
           "Open questions"
         ]
       },
-      "context": { "L1": ["phase:align", "text:definition-of-done"] }
+      "context": {
+        "L1": [
+          "phase:align",
+          "text:definition-of-done",
+          "knowledge:type=rule,topic=specification"
+        ],
+        "L2": [
+          "knowledge:type=decision"
+        ]
+      },
+      "trace": {
+        "prefix": "R"
+      },
+      "mayNeed": [
+        "security-defense"
+      ]
     },
     {
       "kind": "plan",
@@ -85,13 +157,35 @@
       "title": "Plan",
       "goal": "Break the spec into small, ordered work items the Engineer can implement and verify one at a time.",
       "owner": "Architect",
-      "reviewers": ["Engineer"],
+      "reviewers": [
+        "Engineer"
+      ],
       "maxItems": 10,
       "artifact": {
         "name": "plan.md",
-        "sections": ["Approach", "Work items", "Verification", "Risks"]
+        "sections": [
+          "Approach",
+          "Work items",
+          "Verification",
+          "Risks"
+        ]
       },
-      "context": { "L1": ["artifact:spec.md", "text:plan-guide"], "L2": ["phase:align"] }
+      "context": {
+        "L1": [
+          "artifact:spec.md",
+          "text:plan-guide",
+          "knowledge:type=rule,topic=planning"
+        ],
+        "L2": [
+          "phase:align",
+          "knowledge:type=fact"
+        ]
+      },
+      "trace": {
+        "from": [
+          "spec"
+        ]
+      }
     },
     {
       "kind": "execute",
@@ -99,8 +193,20 @@
       "title": "Implement",
       "goal": "Implement the work item in the project, test first, and commit it.",
       "items": "plan",
-      "assignees": ["Engineer"],
-      "context": { "L1": ["artifact:spec.md", "artifact:plan.md", "text:workspace-rules"] }
+      "assignees": [
+        "Engineer"
+      ],
+      "context": {
+        "L1": [
+          "artifact:spec.md",
+          "artifact:plan.md",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "knowledge:type=fact"
+        ]
+      }
     },
     {
       "kind": "review",
@@ -108,12 +214,27 @@
       "title": "Review",
       "goal": "Check the delivered changes against the spec and the plan; the Engineer fixes what the review finds until the Reviewer approves.",
       "owner": "Engineer",
-      "reviewers": ["Reviewer"],
+      "reviewers": [
+        "Reviewer"
+      ],
       "maxRevisions": 2,
       "context": {
-        "L1": ["artifact:spec.md", "text:review-checklist", "text:workspace-rules"],
-        "L2": ["artifact:plan.md"]
-      }
+        "L1": [
+          "artifact:spec.md",
+          "text:review-checklist",
+          "text:workspace-rules",
+          "knowledge:type=rule,topic=code-review",
+          "knowledge:type=rule,topic=implementation"
+        ],
+        "L2": [
+          "artifact:plan.md",
+          "knowledge:type=fact"
+        ]
+      },
+      "mayNeed": [
+        "security-defense",
+        "compliance"
+      ]
     }
   ],
   "escalation": {
@@ -124,5 +245,10 @@
       "Business context the team cannot see"
     ]
   },
-  "bus": { "topics": ["decisions"], "maxMessagesPerAgent": 120 }
+  "bus": {
+    "topics": [
+      "decisions"
+    ],
+    "maxMessagesPerAgent": 120
+  }
 }

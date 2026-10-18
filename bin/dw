@@ -10,7 +10,7 @@ while [ -L "$SELF" ]; do
   esac
 done
 ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
-if [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -f "$ROOT/src/dw/main.ts" ]; then
-  exec "$ROOT/node_modules/.bin/tsx" "$ROOT/src/dw/main.ts" "$@"
+if [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -f "$ROOT/src/dw/cli/main-dev.ts" ]; then
+  exec "$ROOT/node_modules/.bin/tsx" "$ROOT/src/dw/cli/main-dev.ts" "$@"
 fi
 exec node "$ROOT/dist/dw/main.js" "$@"
